@@ -10,9 +10,8 @@ Files that import this module:
     server.py — FastAPI application entry point
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-from typing import Any
 
 # ---------------------------------------------------------------------------
 # Kite chain descriptor
@@ -29,9 +28,9 @@ class KiteChain:
     match the token contract exactly or the facilitator rejects the signature.
     """
 
-    network: str                     # CAIP-2 identifier
+    network: str  # CAIP-2 identifier
     rpc_url: str
-    asset_address: str               # stablecoin contract
+    asset_address: str  # stablecoin contract
     asset_symbol: str
     asset_decimals: int
     eip712_name: str
@@ -118,7 +117,7 @@ def kite_money_parser(chain: KiteChain):
         try:
             value = Decimal(text)
         except InvalidOperation:
-            raise ValueError(f"price must be a positive decimal, got {amount}")
+            raise ValueError(f"price must be a positive decimal, got {amount}") from None
 
         if value <= 0:
             raise ValueError(f"price must be positive, got {amount}")
@@ -127,9 +126,7 @@ def kite_money_parser(chain: KiteChain):
         factor = Decimal(10) ** chain.asset_decimals
         units = int(value * factor)
         if units <= 0:
-            raise ValueError(
-                f"price {amount} is below one unit of {chain.asset_symbol}"
-            )
+            raise ValueError(f"price {amount} is below one unit of {chain.asset_symbol}")
 
         return AssetAmount(
             amount=str(units),
@@ -137,7 +134,9 @@ def kite_money_parser(chain: KiteChain):
             extra={
                 "name": chain.eip712_name,
                 "version": chain.eip712_version,
-            } if chain.eip712_name else None,
+            }
+            if chain.eip712_name
+            else None,
         )
 
     return parser

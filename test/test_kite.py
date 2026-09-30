@@ -1,17 +1,19 @@
 """Tests for kite.py — Kite chain configuration and money parser (extended)."""
+
 import sys
 
 sys.path.insert(0, ".")
 
 import pytest
+from x402.schemas import AssetAmount
+
 from kite import (
+    FACILITATOR_URL,
     KITE_MAINNET,
     KITE_TESTNET,
-    FACILITATOR_URL,
     kite_chain_by_name,
     kite_money_parser,
 )
-from x402.schemas import AssetAmount
 
 
 class TestKiteConfig:

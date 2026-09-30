@@ -1,11 +1,13 @@
 """Tests for server.py — FastAPI application and 402 middleware (extended)."""
+
 import sys
 
 sys.path.insert(0, ".")
 
 import os
+
 import pytest
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 # Set env before importing app
 os.environ["PAY_TO"] = "0x0000000000000000000000000000000000000000"
@@ -13,7 +15,15 @@ os.environ["UPSTREAM_URL"] = "https://api.open-meteo.com"
 os.environ["KITE_NETWORK"] = "testnet"
 os.environ["PRICE_USD"] = "0.001"
 
-from server import app, PAY_TO, UPSTREAM_URL, CHAIN, PRICE, UPSTREAM_AUTH_HEADER, UPSTREAM_AUTH_VALUE
+from server import (
+    CHAIN,
+    PAY_TO,
+    PRICE,
+    UPSTREAM_AUTH_HEADER,
+    UPSTREAM_AUTH_VALUE,
+    UPSTREAM_URL,
+    app,
+)
 
 
 @pytest.fixture
@@ -24,6 +34,7 @@ async def client():
 
 
 # ---- Health check ----
+
 
 @pytest.mark.asyncio
 async def test_healthz(client):
@@ -37,6 +48,7 @@ async def test_healthz(client):
 
 
 # ---- 402 responses for unpaid requests ----
+
 
 @pytest.mark.asyncio
 async def test_v1_unpaid_returns_402(client):
@@ -72,10 +84,12 @@ async def test_v1_delete_returns_402(client):
 
 # ---- Payment header shape ----
 
+
 @pytest.mark.asyncio
 async def test_payment_header_is_base64_json(client):
     resp = await client.get("/v1/forecast?latitude=52.52&longitude=13.41")
-    import base64, json
+    import base64
+    import json
 
     raw = resp.headers["payment-required"]
     decoded = base64.b64decode(raw)
@@ -93,6 +107,7 @@ async def test_payment_header_is_base64_json(client):
 
 
 # ---- Non-402 paths should be free ----
+
 
 @pytest.mark.asyncio
 async def test_healthz_is_free(client):
@@ -116,6 +131,7 @@ async def test_openapi_docs_is_free(client):
 
 
 # ---- Env/config validation ----
+
 
 def test_env_vars_loaded():
     """Verify that the module-scoped env vars parsed correctly."""

@@ -30,15 +30,15 @@ from urllib.parse import urlparse
 
 import httpx
 from dotenv import load_dotenv
-
-from kite import FACILITATOR_URL, kite_chain_by_name, kite_money_parser
+from fastapi import FastAPI, Request, Response
+from starlette.responses import JSONResponse
 
 # ---------------------------------------------------------------------------
 # SDK imports (install via ``pip install 'x402[evm,fastapi]'``)
 # ---------------------------------------------------------------------------
 from x402.http import (
-    HTTPFacilitatorClient,
     FacilitatorConfig,
+    HTTPFacilitatorClient,
     PaymentOption,
     RouteConfig,
     RoutesConfig,
@@ -46,6 +46,8 @@ from x402.http import (
 from x402.http.middleware.fastapi import payment_middleware
 from x402.mechanisms.evm.exact import ExactEvmServerScheme
 from x402.server import x402ResourceServer
+
+from kite import FACILITATOR_URL, kite_chain_by_name, kite_money_parser
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -97,9 +99,7 @@ FACILITATOR_URL_OVERRIDE = env("FACILITATOR_URL", FACILITATOR_URL)
 # ---------------------------------------------------------------------------
 
 # 1. Facilitator client
-facilitator = HTTPFacilitatorClient(
-    FacilitatorConfig(url=FACILITATOR_URL_OVERRIDE)
-)
+facilitator = HTTPFacilitatorClient(FacilitatorConfig(url=FACILITATOR_URL_OVERRIDE))
 
 # 2. Resource server with Kite-specific money parser
 scheme = ExactEvmServerScheme().register_money_parser(kite_money_parser(CHAIN))
@@ -126,9 +126,6 @@ routes: RoutesConfig = {
 # ---------------------------------------------------------------------------
 # FastAPI application
 # ---------------------------------------------------------------------------
-
-from fastapi import FastAPI, Request, Response
-from starlette.responses import JSONResponse
 
 app = FastAPI(
     title=f"Kite x402 service ({CHAIN.asset_symbol})",
@@ -176,10 +173,18 @@ async def proxy_v1(request: Request, path: str):
         target_url = f"{target_url}?{request.url.query}"
 
     # Build upstream headers (strip hop-by-hop + the payment signature).
-    hop_by_hop = frozenset({
-        "connection", "keep-alive", "transfer-encoding",
-        "te", "trailer", "upgrade", "host", "content-length",
-    })
+    hop_by_hop = frozenset(
+        {
+            "connection",
+            "keep-alive",
+            "transfer-encoding",
+            "te",
+            "trailer",
+            "upgrade",
+            "host",
+            "content-length",
+        }
+    )
     headers = dict(request.headers)
     for key in list(headers.keys()):
         lower = key.lower()
