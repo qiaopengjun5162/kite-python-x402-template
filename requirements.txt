@@ -2,3 +2,5 @@ x402[evm,fastapi]
 uvicorn[standard]
 httpx
 python-dotenv
+pytest
+pytest-asyncio

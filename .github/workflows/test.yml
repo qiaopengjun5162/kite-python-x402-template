@@ -23,28 +23,10 @@ jobs:
         run: |
           just install
           pip install -r requirements-dev.txt
-      - name: Module import check
+      - name: Run tests
         run: |
-          python3 -c "
-          import sys; sys.path.insert(0, '.')
-          from kite import KITE_MAINNET, KITE_TESTNET, kite_money_parser, kite_chain_by_name
-          from x402.schemas import AssetAmount
-          chain = kite_chain_by_name('testnet')
-          amt = kite_money_parser(chain)(0.001, chain.network)
-          assert isinstance(amt, AssetAmount), 'Expected AssetAmount, got %s' % type(amt)
-          assert int(amt.amount) > 0
-          print('Kite testnet: %s  asset: %s  $0.001 -> %s atoms' % (chain.network, chain.asset_symbol, amt.amount))
-          print('Import OK')
-          "
-      - name: Server module load
-        run: |
-          python3 -c "
-          import sys; sys.path.insert(0, '.')
-          import os
-          os.environ['PAY_TO'] = '0x0000000000000000000000000000000000000000'
-          os.environ['UPSTREAM_URL'] = 'https://api.open-meteo.com'
-          os.environ['KITE_NETWORK'] = 'testnet'
-          os.environ['PRICE_USD'] = '0.001'
-          from server import app
-          print('Server app loaded: %s' % app.title)
-          "
+          export PAY_TO=0x0000000000000000000000000000000000000000
+          export UPSTREAM_URL=https://api.open-meteo.com
+          export KITE_NETWORK=testnet
+          export PRICE_USD=0.001
+          just test
