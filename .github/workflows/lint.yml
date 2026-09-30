@@ -20,8 +20,10 @@ jobs:
       - name: Install just
         uses: extractions/setup-just@v2
       - name: Install dependencies
-        run: just install
+        run: |
+          just install
+          pip install -r requirements-dev.txt
       - name: Ruff check
-        run: just lint
+        run: ruff check .
       - name: Ruff format check
         run: ruff format --check .
