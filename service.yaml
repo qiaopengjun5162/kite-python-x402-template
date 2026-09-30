@@ -1,9 +1,9 @@
 schema: 1
 name: kite-python-x402-template
-display_name: Python FastAPI Weather (python-fastapi template)
+display_name: Python FastAPI x402 Wrapper
 description: >-
-  Example service built from the python-fastapi template. Proxies the Open-Meteo
-  weather API with x402 pay-per-call pricing on the Kite testnet (pieUSD).
+  A Python/FastAPI x402 payment wrapper for Kite Agent Passport. Charges
+  $0.001 per call on Kite testnet (pieUSD). Proxies any upstream API.
 maintainer:
   github: qiaopengjun5162
 status: draft

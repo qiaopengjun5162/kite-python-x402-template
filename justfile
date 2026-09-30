@@ -37,7 +37,7 @@ test:
 
 # Validate service manifest against schema
 validate:
-    {{python}} ../../scripts/validate.py
+    echo "Schema validation: see kite-x402-services/scripts/validate.py"
 
 # Start dev server (reload on changes)
 run port="8080":
