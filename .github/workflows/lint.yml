@@ -24,14 +24,4 @@ jobs:
       - name: Ruff check
         run: just lint
       - name: Ruff format check
-        run: |
-          cat > /tmp/ruff_format_check.py << 'EOF'
-          import subprocess, sys
-          r = subprocess.run(["ruff", "format", "--check", "."], capture_output=True, text=True)
-          if r.returncode != 0:
-              print(r.stdout)
-              print(r.stderr)
-              sys.exit(r.returncode)
-          print("Format OK")
-          EOF
-          python3 /tmp/ruff_format_check.py
+        run: ruff format --check .

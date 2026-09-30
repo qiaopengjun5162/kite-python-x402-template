@@ -36,7 +36,7 @@ footer = """
 """
 trim = true
 postprocessors = [
-{ pattern = '$REPO', replace = "https://github.com/gokite-ai/kite-x402-services" },
+{ pattern = '$REPO', replace = "https://github.com/qiaopengjun5162/kite-python-x402-template" },
 ]
 
 [git]

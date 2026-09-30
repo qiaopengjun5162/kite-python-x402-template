@@ -1,16 +1,18 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
+All notable changes to this project will be documented in this file.
 
----
-
-## [0.1.0] - 2026-09-28
+## [0.1.0] - 2026-09-30
 
 ### Features
 
-- **python-fastapi**: x402 wrapper template with Kite facilitator integration - (abc1234) - Paxon Qiao
-
-### Documentation
-
-- initial README with setup, configuration and usage guide
-- CONTRIBUTING.md with collaboration guidelines
+- Python/FastAPI x402 payment wrapper with reverse proxy
+- Two Kite networks: mainnet (USDC.e) and testnet (pieUSD)
+- `$0.001`-style price parser with EIP-3009 support
+- Payment middleware: unpaid requests return 402 + `PAYMENT-REQUIRED` header
+- Health-check endpoint (`/healthz`)
+- CORS support (optional)
+- Dockerfile for production deployment
+- CI/CD: lint (ruff, mypy) + test (pytest, 19 tests)
+- Pre-commit hooks: ruff, mypy, typos, file checks
+- CHANGELOG via git-cliff

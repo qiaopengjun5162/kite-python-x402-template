@@ -1,36 +1,33 @@
-fail_fast: false
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests, httpx]
+        args: [--strict, --ignore-missing-imports, --python-version=3.14]
+        exclude: ^test/
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
-      - id: check-byte-order-marker
-      - id: check-case-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]
       - id: check-merge-conflict
-      - id: check-symlinks
-      - id: check-yaml
       - id: check-toml
+      - id: check-yaml
       - id: end-of-file-fixer
-      - id: mixed-line-ending
       - id: trailing-whitespace
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.0
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-  - repo: local
+        exclude: \.md$
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.29.0
     hooks:
       - id: typos
-        name: typos
-        description: check spelling
-        entry: bash -c 'typos'
-        language: rust
-        files: \.*$
-        pass_filenames: false
-      - id: pip-audit
-        name: pip audit
-        description: check dependencies for known vulnerabilities
-        entry: bash -c 'pip-audit --requirement requirements.txt'
-        language: python
-        files: requirements\.txt$
-        pass_filenames: false
+        args: [--config, _typos.toml]

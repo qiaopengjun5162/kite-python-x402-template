@@ -31,6 +31,9 @@ format:
 typos:
     typos
 
+# Check everything: lint + test (CI gate)
+check: lint test
+
 # Run all tests
 test:
     {{venv}}/bin/pytest -v test/
