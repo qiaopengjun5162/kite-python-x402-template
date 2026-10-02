@@ -1,19 +1,7 @@
 """Tests for server.py — FastAPI application and 402 middleware (extended)."""
 
-import sys
-
-sys.path.insert(0, ".")
-
-import os
-
 import pytest
 from httpx import ASGITransport, AsyncClient
-
-# Set env before importing app
-os.environ["PAY_TO"] = "0x0000000000000000000000000000000000000000"
-os.environ["UPSTREAM_URL"] = "https://api.open-meteo.com"
-os.environ["KITE_NETWORK"] = "testnet"
-os.environ["PRICE_USD"] = "0.001"
 
 from server import (
     CHAIN,

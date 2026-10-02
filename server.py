@@ -90,6 +90,7 @@ PRICE_RAW = env("PRICE_USD", "0.001")
 PRICE = f"${PRICE_RAW}" if not PRICE_RAW.startswith("$") else PRICE_RAW
 UPSTREAM_AUTH_HEADER = env("UPSTREAM_AUTH_HEADER", "Authorization")
 UPSTREAM_AUTH_VALUE = env("UPSTREAM_AUTH_VALUE")
+UPSTREAM_TIMEOUT = float(env("UPSTREAM_TIMEOUT", "30.0"))
 SERVICE_DESCRIPTION = env("SERVICE_DESCRIPTION", "Paid API wrapped for the Kite network")
 PORT = int(env("PORT", "8080"))
 FACILITATOR_URL_OVERRIDE = env("FACILITATOR_URL", FACILITATOR_URL)
@@ -122,6 +123,31 @@ routes: RoutesConfig = {
         mime_type="application/json",
     ),
 }
+
+# ---- Upstream HTTP client (connection-pooled) ----
+_http_client: httpx.AsyncClient | None = None
+
+
+def _get_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None:
+        _http_client = httpx.AsyncClient(timeout=UPSTREAM_TIMEOUT)
+    return _http_client
+
+
+# Headers stripped from the upstream proxy hop.
+HOP_BY_HOP: frozenset[str] = frozenset(
+    {
+        "connection",
+        "keep-alive",
+        "transfer-encoding",
+        "te",
+        "trailer",
+        "upgrade",
+        "host",
+        "content-length",
+    }
+)
 
 # ---------------------------------------------------------------------------
 # FastAPI application
@@ -173,40 +199,26 @@ async def proxy_v1(request: Request, path: str):
         target_url = f"{target_url}?{request.url.query}"
 
     # Build upstream headers (strip hop-by-hop + the payment signature).
-    hop_by_hop = frozenset(
-        {
-            "connection",
-            "keep-alive",
-            "transfer-encoding",
-            "te",
-            "trailer",
-            "upgrade",
-            "host",
-            "content-length",
-        }
-    )
     headers = dict(request.headers)
     for key in list(headers.keys()):
         lower = key.lower()
-        if lower in hop_by_hop or lower == "payment-signature":
+        if lower in HOP_BY_HOP or lower == "payment-signature":
             del headers[key]
 
     if UPSTREAM_AUTH_VALUE:
         headers[UPSTREAM_AUTH_HEADER] = UPSTREAM_AUTH_VALUE
 
     # Forward the body for non-GET/HEAD requests.
-    has_body = request.method not in ("GET", "HEAD")
-    body = await request.body() if has_body else None
+    body = await request.body() if request.method not in ("GET", "HEAD") else None
 
     try:
-        async with httpx.AsyncClient() as client:
-            upstream_resp = await client.request(
-                method=request.method,
-                url=target_url,
-                headers=headers,
-                content=body,
-                timeout=30.0,
-            )
+        upstream_resp = await _get_client().request(
+            method=request.method,
+            url=target_url,
+            headers=headers,
+            content=body,
+            timeout=UPSTREAM_TIMEOUT,
+        )
     except httpx.RequestError as exc:
         # 502 is >= 400, so the payment middleware does not settle the charge.
         return JSONResponse(
@@ -218,7 +230,7 @@ async def proxy_v1(request: Request, path: str):
     upstream_headers = {
         k: v
         for k, v in upstream_resp.headers.items()
-        if k.lower() not in hop_by_hop and k.lower() != "content-encoding"
+        if k.lower() not in HOP_BY_HOP and k.lower() != "content-encoding"
     }
     return Response(
         content=upstream_resp.content,

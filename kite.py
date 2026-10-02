@@ -84,11 +84,12 @@ def kite_chain_by_name(name: str | None) -> KiteChain:
     Raises ValueError on unknown names.
     """
     key = (name or "mainnet").strip().lower()
-    if key in ("", "mainnet"):
-        return KITE_MAINNET
-    if key == "testnet":
-        return KITE_TESTNET
-    raise ValueError(f'unknown KITE_NETWORK "{name}" (want mainnet or testnet)')
+    if key == "":
+        key = "mainnet"
+    try:
+        return _CHAINS[key]
+    except KeyError:
+        raise ValueError(f'unknown KITE_NETWORK "{name}" (want mainnet or testnet)') from None
 
 
 def kite_money_parser(chain: KiteChain):
